@@ -3,6 +3,8 @@ import importlib.metadata
 from functools import wraps
 from typing import Generator, Tuple, Type, Any, List
 
+CLASS_ARGS = ['self', 'cls']
+
 
 def add_generic_visit(func):
     @wraps(func)
@@ -45,7 +47,7 @@ class Visitor(ast.NodeVisitor):
         all_args = [arg for arg in all_args if arg is not None]
 
         all_arguments_are_on_one_line = all((function_line == arg.lineno for arg in all_args))
-        arguments_lines = [arg.lineno for arg in all_args if arg.arg != 'self']
+        arguments_lines = [arg.lineno for arg in all_args if arg.arg not in CLASS_ARGS]
         if all_arguments_are_on_one_line and len(arguments_lines) > max_single_line_args:
             problems.append(
                 (
@@ -64,8 +66,8 @@ class Visitor(ast.NodeVisitor):
 
         all_args = args.args + [args.vararg] + args.kwonlyargs + [args.kwarg]
         all_args = [arg for arg in all_args if arg is not None]
-        args_lines = [arg.lineno for arg in all_args if arg.arg != 'self']
-        uniq_args_lines = {arg.lineno for arg in all_args if arg.arg != 'self'}
+        args_lines = [arg.lineno for arg in all_args if arg.arg not in CLASS_ARGS]
+        uniq_args_lines = {arg.lineno for arg in all_args if arg.arg not in CLASS_ARGS}
         if any((function_line != arg.lineno for arg in all_args)) and len(args_lines) != len(uniq_args_lines):
             problems.append(
                 (
